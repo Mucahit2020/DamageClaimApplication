@@ -8,39 +8,47 @@ namespace HasarIhbar.Application.Validators
         {
             var errors = new List<string>();
 
-            // Tab 1 - Policy Info
             if (string.IsNullOrWhiteSpace(application.PolicyNumber))
                 errors.Add("Policy number is required.");
 
-            if (string.IsNullOrWhiteSpace(application.NationalId) || application.NationalId.Length != 11)
-                errors.Add("National ID must be 11 digits.");
+            if (string.IsNullOrWhiteSpace(application.ReporterFullName))
+                errors.Add("Reporter full name is required.");
 
-            // Tab 2 - Personal Info
-            if (string.IsNullOrWhiteSpace(application.FirstName))
-                errors.Add("First name is required.");
+            if (string.IsNullOrWhiteSpace(application.ReporterType))
+                errors.Add("Reporter type is required.");
 
-            if (string.IsNullOrWhiteSpace(application.LastName))
-                errors.Add("Last name is required.");
+            if (string.IsNullOrWhiteSpace(application.ClaimProvince))
+                errors.Add("Claim province is required.");
 
-            if (string.IsNullOrWhiteSpace(application.Phone))
-                errors.Add("Phone is required.");
+            if (string.IsNullOrWhiteSpace(application.ClaimDistrict))
+                errors.Add("Claim district is required.");
 
-            if (!string.IsNullOrWhiteSpace(application.Email) && !application.Email.Contains("@"))
-                errors.Add("Email is not valid.");
+            if (string.IsNullOrWhiteSpace(application.ClaimDateTime))
+                errors.Add("Claim date/time is required.");
 
-            // Tab 3 - Claim Info
-            if (application.ClaimDate == default)
-                errors.Add("Claim date is required.");
-
-            if (string.IsNullOrWhiteSpace(application.ClaimLocation))
-                errors.Add("Claim location is required.");
+            if (string.IsNullOrWhiteSpace(application.ClaimAmount))
+                errors.Add("Claim amount is required.");
 
             if (string.IsNullOrWhiteSpace(application.ClaimDescription))
                 errors.Add("Claim description is required.");
 
-            // Tab 6 - Declaration
-            if (!application.IsDeclarationAccepted)
-                errors.Add("Declaration must be accepted.");
+            if (string.IsNullOrWhiteSpace(application.Phone))
+                errors.Add("Phone is required.");
+
+            if (string.IsNullOrWhiteSpace(application.DriverNationalId))
+                errors.Add("Driver national ID is required.");
+
+            if (string.IsNullOrWhiteSpace(application.DriverFirstName))
+                errors.Add("Driver first name is required.");
+
+            if (string.IsNullOrWhiteSpace(application.DriverLastName))
+                errors.Add("Driver last name is required.");
+
+            if (string.IsNullOrWhiteSpace(application.ServicePhone))
+                errors.Add("Service phone is required.");
+
+            if (string.IsNullOrWhiteSpace(application.ServiceTaxNumber))
+                errors.Add("Service tax number is required.");
 
             return (!errors.Any(), errors);
         }

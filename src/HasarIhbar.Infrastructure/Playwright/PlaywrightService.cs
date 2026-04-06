@@ -1,4 +1,4 @@
-using HasarIhbar.Domain.Interfaces;
+﻿using HasarIhbar.Domain.Interfaces;
 using Microsoft.Playwright;
 
 namespace HasarIhbar.Infrastructure.Playwright
@@ -9,8 +9,10 @@ namespace HasarIhbar.Infrastructure.Playwright
         private IBrowser? _browser;
         private IBrowserContext? _context;
         private IPage? _page;
+        private IFrame? _frame;
 
         public IPage Page => _page ?? throw new InvalidOperationException("Playwright not initialized.");
+        public IFrame Frame => _frame ?? throw new InvalidOperationException("Frame not initialized.");
 
         public async Task InitializeAsync(bool headless = false)
         {
@@ -18,42 +20,84 @@ namespace HasarIhbar.Infrastructure.Playwright
             _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
             {
                 Headless = headless,
-                SlowMo = 100
+                SlowMo = 300,
+                Args = new[] { "--start-maximized" }
             });
-            _context = await _browser.NewContextAsync();
+
+            _context = await _browser.NewContextAsync(new BrowserNewContextOptions
+            {
+                ViewportSize = null,
+                Locale = "tr-TR",
+                TimezoneId = "Europe/Istanbul"
+            });
+            _context.SetDefaultTimeout(30000);
+
             _page = await _context.NewPageAsync();
         }
 
         public async Task<bool> NavigateAsync(string url)
         {
             if (_page is null) return false;
-            var response = await _page.GotoAsync(url, new PageGotoOptions
+
+            await _page.GotoAsync(url, new PageGotoOptions
             {
-                WaitUntil = WaitUntilState.NetworkIdle,
-                Timeout = 30000
+                WaitUntil = WaitUntilState.DOMContentLoaded,
+                Timeout = 60000
             });
-            return response?.Ok ?? false;
+
+            await _page.WaitForTimeoutAsync(3000);
+            await KapatPopupAsync();
+            await InitFrameAsync();
+            return true;
+        }
+        private async Task InitFrameAsync()
+        {
+            if (_page is null) return;
+            Console.WriteLine("► iframe bekleniyor...");
+
+            var iframeEl = await _page.WaitForSelectorAsync(
+                "iframe.ts-iframe, iframe[src*='onlinepolice'], iframe[src*='hasar']",
+                new PageWaitForSelectorOptions { State = WaitForSelectorState.Visible, Timeout = 60000 });
+
+            _frame = await iframeEl!.ContentFrameAsync()
+                ?? throw new Exception("iframe içeriği alınamadı!");
+
+            await _frame.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+            await _page.WaitForTimeoutAsync(2000);
+            Console.WriteLine("  iframe yüklendi ✓");
         }
 
-        public async Task<bool> SelectTabAsync(int tabIndex)
+        private async Task KapatPopupAsync()
         {
-            if (_page is null) return false;
-            try
+            if (_page is null) return;
+            string[] sels =
             {
-                var tabs = await _page.QuerySelectorAllAsync(".tab-item, .nav-link, li[role='tab']");
-                if (tabIndex < tabs.Count)
+                "button:has-text('Kabul Et')",
+                "button:has-text('Tümünü Kabul Et')",
+                "button:has-text('Kapat')",
+                "[class*='cookie'] button",
+                "[id*='cookie'] button",
+                "[aria-label='Close']"
+            };
+
+            foreach (var sel in sels)
+            {
+                try
                 {
-                    await tabs[tabIndex].ClickAsync();
-                    await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-                    return true;
+                    var btn = await _page.WaitForSelectorAsync(sel,
+                        new PageWaitForSelectorOptions { State = WaitForSelectorState.Visible, Timeout = 2000 });
+                    if (btn != null)
+                    {
+                        await btn.ClickAsync();
+                        await _page.WaitForTimeoutAsync(400);
+                        Console.WriteLine($"  Popup kapatıldı: {sel}");
+                    }
                 }
-                return false;
-            }
-            catch
-            {
-                return false;
+                catch { }
             }
         }
+
+        public async Task<bool> SelectTabAsync(int tabIndex) => true;
 
         public async Task TakeScreenshotAsync(string path)
         {

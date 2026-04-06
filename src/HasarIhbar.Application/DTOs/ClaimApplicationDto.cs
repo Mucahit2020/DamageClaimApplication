@@ -2,32 +2,42 @@
 {
     public class ClaimApplicationDto
     {
-        // Tab 1 - Policy Info
+        // Tab 1 - Temel Bilgiler
         public string PolicyNumber { get; set; } = string.Empty;
-        public string NationalId { get; set; } = string.Empty;
-        public string PlateNumber { get; set; } = string.Empty;
+        public string ReporterFullName { get; set; } = string.Empty;
+        public string ReporterType { get; set; } = string.Empty;
+        public string ReporterIdType { get; set; } = string.Empty;
+        public string Coverage { get; set; } = string.Empty;
 
-        // Tab 2 - Personal Info
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
-        public string Phone { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-
-        // Tab 3 - Claim Info
-        public DateTime ClaimDate { get; set; }
-        public string ClaimLocation { get; set; } = string.Empty;
+        // Tab 2 - Hasar Açıklama
+        public string ClaimProvince { get; set; } = string.Empty;
+        public string ClaimDistrict { get; set; } = string.Empty;
+        public string ClaimDateTime { get; set; } = string.Empty;
+        public string ClaimAmount { get; set; } = string.Empty;
         public string ClaimDescription { get; set; } = string.Empty;
 
-        // Tab 4 - Vehicle Info
-        public string VehicleBrand { get; set; } = string.Empty;
-        public string VehicleModel { get; set; } = string.Empty;
-        public int VehicleYear { get; set; }
+        // Tab 3 - İletişim
+        public string Phone { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string DriverPhone { get; set; } = string.Empty;
+        public string IsInsuredDriver { get; set; } = string.Empty;
+        public string DriverNationalId { get; set; } = string.Empty;
+        public string DriverFirstName { get; set; } = string.Empty;
+        public string DriverLastName { get; set; } = string.Empty;
 
-        // Tab 5 - Third Party Info
-        public string ThirdPartyPlate { get; set; } = string.Empty;
-        public string ThirdPartyFullName { get; set; } = string.Empty;
+        // Tab 4 - Adres
+        public string ResidenceProvince { get; set; } = string.Empty;
+        public string ResidenceDistrict { get; set; } = string.Empty;
+        public string ResidenceStreet { get; set; } = string.Empty;
 
-        // Tab 6 - Declaration
-        public bool IsDeclarationAccepted { get; set; }
+        // Tab 5 - Servis Bilgileri
+        public string ServiceProvince { get; set; } = string.Empty;
+        public string ServiceDistrict { get; set; } = string.Empty;
+        public string ServiceNeighborhood { get; set; } = string.Empty;
+        public string ServiceStreet { get; set; } = string.Empty;
+        public string ServiceAlley { get; set; } = string.Empty;
+        public string ServicePhone { get; set; } = string.Empty;
+        public string ServiceTaxNumber { get; set; } = string.Empty;
+        public string ServiceEmail { get; set; } = string.Empty;
     }
 }

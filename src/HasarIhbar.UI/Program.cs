@@ -6,115 +6,77 @@ using HasarIhbar.Infrastructure.Playwright;
 using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection();
-
-// Register services
 services.AddSingleton<PlaywrightService>();
 services.AddSingleton<IPlaywrightService>(sp => sp.GetRequiredService<PlaywrightService>());
-services.AddSingleton<IFormFiller,FormFiller >();
+services.AddSingleton<IFormFiller, FormFiller>();
 services.AddSingleton<IClaimApplicationService, ClaimApplicationService>();
 services.AddSingleton<ClaimApplicationValidator>();
 
 var provider = services.BuildServiceProvider();
-
 var validator = provider.GetRequiredService<ClaimApplicationValidator>();
 var claimService = provider.GetRequiredService<IClaimApplicationService>();
 
+// --- ÖRNEK VERİ ---
+var app = new ClaimApplication
+{
+    // Tab 1 - Temel Bilgiler
+    PolicyNumber = "123456789",
+    ReporterFullName = "Mucahit Kizilgunes",
+    ReporterType = "SIGORTALI",
+    ReporterIdType = "TC_KIMLIK_NO",
+    Coverage = "12", // Cam Kırılması
+
+    // Tab 2 - Hasar Açıklama
+    ClaimProvince = "40",     // İstanbul
+    ClaimDistrict = "97506",  // Kadıköy
+    ClaimDateTime = "2026-04-05T10:30",
+    ClaimAmount = "5000",
+    ClaimDescription = "Aracın ön camı park halindeyken taş isabet sonucu kırılmıştır.",
+
+    // Tab 3 - İletişim
+    Phone = "05321234567",
+    Email = "mucahit@example.com",
+    DriverPhone = "05321234567",
+    IsInsuredDriver = "true",
+    DriverNationalId = "12345678901",
+    DriverFirstName = "Mucahit",
+    DriverLastName = "Kizilgunes",
+
+    // Tab 4 - Adres
+    ResidenceProvince = "40",     // İstanbul
+    ResidenceDistrict = "97506",  // Kadıköy
+    ResidenceStreet = "Bagdat Caddesi",
+
+    // Tab 5 - Servis Bilgileri
+    ServiceProvince = "40",     // İstanbul
+    ServiceDistrict = "97506",  // Kadıköy
+    ServiceNeighborhood = "Moda Mahallesi",
+    ServiceStreet = "Moda Caddesi",
+    ServiceAlley = "Caferaga Sokak",
+    ServicePhone = "02161234567",
+    ServiceTaxNumber = "12345678901",
+    ServiceEmail = "servis@example.com"
+};
+
 Console.WriteLine("=== Hasar Ihbar Basvuru Sistemi ===");
+Console.WriteLine("Ornek veri yuklendi, basvuru baslatiliyor...");
 Console.WriteLine();
 
-var application = new ClaimApplication();
-
-// Tab 1 - Policy Info
-Console.WriteLine("--- Tab 1: Police Bilgileri ---");
-Console.Write("Police No: ");
-application.PolicyNumber = Console.ReadLine() ?? string.Empty;
-
-Console.Write("TC Kimlik No: ");
-application.NationalId = Console.ReadLine() ?? string.Empty;
-
-Console.Write("Plaka No (bos birakabilirsiniz): ");
-application.PlateNumber = Console.ReadLine() ?? string.Empty;
-
-// Tab 2 - Personal Info
-Console.WriteLine();
-Console.WriteLine("--- Tab 2: Kisisel Bilgiler ---");
-Console.Write("Ad: ");
-application.FirstName = Console.ReadLine() ?? string.Empty;
-
-Console.Write("Soyad: ");
-application.LastName = Console.ReadLine() ?? string.Empty;
-
-Console.Write("Telefon: ");
-application.Phone = Console.ReadLine() ?? string.Empty;
-
-Console.Write("Email (bos birakabilirsiniz): ");
-application.Email = Console.ReadLine() ?? string.Empty;
-
-// Tab 3 - Claim Info
-Console.WriteLine();
-Console.WriteLine("--- Tab 3: Hasar Bilgileri ---");
-Console.Write("Hasar Tarihi (gg.aa.yyyy): ");
-if (DateTime.TryParseExact(Console.ReadLine(), "dd.MM.yyyy", null, System.Globalization.DateTimeStyles.None, out var claimDate))
-    application.ClaimDate = claimDate;
-
-Console.Write("Hasar Yeri: ");
-application.ClaimLocation = Console.ReadLine() ?? string.Empty;
-
-Console.Write("Hasar Aciklamasi: ");
-application.ClaimDescription = Console.ReadLine() ?? string.Empty;
-
-// Tab 4 - Vehicle Info
-Console.WriteLine();
-Console.WriteLine("--- Tab 4: Arac Bilgileri (bos birakabilirsiniz) ---");
-Console.Write("Arac Marka: ");
-application.VehicleBrand = Console.ReadLine() ?? string.Empty;
-
-Console.Write("Arac Model: ");
-application.VehicleModel = Console.ReadLine() ?? string.Empty;
-
-Console.Write("Arac Yili: ");
-if (int.TryParse(Console.ReadLine(), out var vehicleYear))
-    application.VehicleYear = vehicleYear;
-
-// Tab 5 - Third Party Info
-Console.WriteLine();
-Console.WriteLine("--- Tab 5: Karsit Taraf Bilgileri (bos birakabilirsiniz) ---");
-Console.Write("Karsit Taraf Plaka: ");
-application.ThirdPartyPlate = Console.ReadLine() ?? string.Empty;
-
-Console.Write("Karsit Taraf Ad Soyad: ");
-application.ThirdPartyFullName = Console.ReadLine() ?? string.Empty;
-
-// Tab 6 - Declaration
-Console.WriteLine();
-Console.WriteLine("--- Tab 6: Beyan ---");
-Console.Write("Beyani kabul ediyor musunuz? (e/h): ");
-application.IsDeclarationAccepted = Console.ReadLine()?.ToLower() == "e";
-
-// Validate
-Console.WriteLine();
-var (isValid, errors) = validator.Validate(application);
+var (isValid, errors) = validator.Validate(app);
 if (!isValid)
 {
     Console.WriteLine("=== Dogrulama Hatalari ===");
     foreach (var error in errors)
         Console.WriteLine($"  - {error}");
-    Console.WriteLine("Basvuru iptal edildi.");
     return;
 }
 
-// Submit
-Console.WriteLine("Basvuru gonderiliyor...");
-var success = await claimService.SubmitAsync(application);
+Console.WriteLine("Tarayici aciliyor...");
+var success = await claimService.SubmitAsync(app);
 
-if (success)
-{
-    Console.WriteLine("Basvuru basariyla tamamlandi!");
-}
-else
-{
-    Console.WriteLine($"Basvuru basarisiz: {application.ErrorMessage}");
-}
+Console.WriteLine(success
+    ? "Basvuru basariyla tamamlandi!"
+    : $"Basvuru basarisiz: {app.ErrorMessage}");
 
 Console.WriteLine("Cikmak icin bir tusa basin...");
 Console.ReadKey();
