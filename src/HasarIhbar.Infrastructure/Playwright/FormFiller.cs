@@ -64,6 +64,7 @@ namespace HasarIhbar.Infrastructure.Playwright
             await page.FillAsync("input[name='phone'], #phone", application.Phone);
             if (!string.IsNullOrEmpty(application.Email))
                 await page.FillAsync("input[name='email'], #email", application.Email);
+
         }
 
         private async Task FillTab3Async(ClaimApplication application)
