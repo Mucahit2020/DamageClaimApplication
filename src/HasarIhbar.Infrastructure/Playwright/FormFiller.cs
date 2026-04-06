@@ -74,6 +74,7 @@ namespace HasarIhbar.Infrastructure.Playwright
             await page.FillAsync("textarea[name='claimDescription'], #claimDescription", application.ClaimDescription);
         }
 
+
         private async Task FillTab4Async(ClaimApplication application)
         {
             var page = _playwrightService.Page;
